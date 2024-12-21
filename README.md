@@ -4,8 +4,8 @@ sets up a virtual workspace with Docker-in-Docker (DinD), SSH access, Docker Com
 ## build and run
 
 ```bash
-docker build -t workspace .\workspace\
-docker run -d -p 22:22 -v workspace:/workspace --name workspace workspace
+docker build -t wind .
+docker run -d -p 22:22 -v workspace:/workspace --name workspace wind
 ```
 
 ```bash
