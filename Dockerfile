@@ -1,7 +1,10 @@
 FROM ubuntu:latest AS build
 
-# instal curl
-RUN apt update && apt install -y curl
+# install docker cli
+RUN apt update && apt install -y apt-transport-https ca-certificates curl software-properties-common
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+RUN apt update && apt install -y docker-ce-cli
 
 # install docker compose
 RUN curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -23,20 +26,18 @@ FROM ubuntu:latest
 # Copy necessary files from the build stage
 COPY --from=build /usr/local/bin/ /usr/local/bin/
 COPY --from=build /root/go/bin /usr/local/bin/
+COPY --from=build /usr/bin/docker /usr/local/bin/
 
 # install authk
 COPY authk.sh /usr/local/bin/authk
 RUN chmod +x /usr/local/bin/authk
 
-# install docker cli
-RUN apt update && apt install -y apt-transport-https ca-certificates curl software-properties-common
-RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-RUN apt update && apt install -y docker-ce-cli
+# enable dind
 RUN echo 'export DOCKER_HOST=tcp://host.docker.internal:2375' >> ~/.bashrc
 
 # install sshd
-RUN apt-get install -y openssh-server && \
+RUN apt update && \
+    apt-get install -y openssh-server && \
     mkdir /var/run/sshd
 RUN echo "PermitRootLogin prohibit-password" >> /etc/ssh/sshd_config && \
     echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
