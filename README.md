@@ -2,6 +2,10 @@
 sets up a virtual workspace with Docker-in-Docker (DinD), SSH access, Docker Compose, Kind, and kubectl. This setup is useful for running and managing containers within a container, especially in CI/CD pipelines or as a development environment.
 
 ## build and run
+* change the endline from CRLF to LF
+    ```bash
+    dos2unix ./*.sh
+    ```
 * build local
     ```bash
     docker build -t wind .

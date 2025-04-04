@@ -15,6 +15,10 @@ RUN curl -L -O https://go.dev/dl/go1.21.1.linux-amd64.tar.gz && \
     tar -C / -xzf go1.21.1.linux-amd64.tar.gz
 RUN /go/bin/go install sigs.k8s.io/kind@v0.26.0
 
+# install minikube
+RUN curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikube-linux-amd64
+RUN install minikube-linux-amd64 /usr/local/bin/minikube
+
 # install kubectl
 RUN curl -LO "https://dl.k8s.io/release/v1.27.3/bin/linux/amd64/kubectl" && \
     chmod +x kubectl && \
@@ -28,15 +32,23 @@ COPY --from=build /usr/local/bin/ /usr/bin
 COPY --from=build /root/go/bin /usr/bin
 COPY --from=build /usr/bin/docker /usr/bin
 
-# install authk
+# install scripts
 COPY authk.sh /usr/bin/authk
 COPY user.sh /usr/bin/user
 RUN chmod +x /usr/bin/authk /usr/bin/user
 
-# install sshd
+# install dependencies
 RUN apt update && \
-    apt-get install -y openssh-server sudo && \
-    mkdir /var/run/sshd
+    apt-get install -y openssh-server sudo curl unzip
+
+# install awscli
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN ./aws/install --bin-dir /usr/bin --install-dir /usr/aws-cli --update
+RUN rm -rf awscliv2.zip aws
+
+# install sshd
+RUN mkdir /var/run/sshd
 RUN echo "PermitRootLogin prohibit-password" >> /etc/ssh/sshd_config && \
     echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
 RUN mkdir -p ~/.ssh && \
