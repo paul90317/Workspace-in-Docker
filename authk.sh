@@ -1,6 +1,6 @@
 #!/bin/bash
 
-AUTHORIZED_KEYS_FILE="/root/.ssh/authorized_keys"
+AUTHORIZED_KEYS_FILE="~/.ssh/authorized_keys"
 
 # Check if .ssh directory and authorized_keys file exist
 ensure_ssh_setup() {

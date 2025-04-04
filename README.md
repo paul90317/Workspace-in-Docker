@@ -19,3 +19,11 @@ sets up a virtual workspace with Docker-in-Docker (DinD), SSH access, Docker Com
     # list all added keys
     docker exec workspace authk ls
     ```
+* add user
+    ```bash
+    # add new public key to authorized_keys
+    docker exec workspace user add <username>
+
+    # list all added keys
+    docker exec workspace user ls
+    ```

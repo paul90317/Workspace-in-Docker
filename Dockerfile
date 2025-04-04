@@ -24,20 +24,18 @@ RUN curl -LO "https://dl.k8s.io/release/v1.27.3/bin/linux/amd64/kubectl" && \
 FROM ubuntu:latest
 
 # Copy necessary files from the build stage
-COPY --from=build /usr/local/bin/ /usr/local/bin/
-COPY --from=build /root/go/bin /usr/local/bin/
-COPY --from=build /usr/bin/docker /usr/local/bin/
+COPY --from=build /usr/local/bin/ /usr/bin
+COPY --from=build /root/go/bin /usr/bin
+COPY --from=build /usr/bin/docker /usr/bin
 
 # install authk
-COPY authk.sh /usr/local/bin/authk
-RUN chmod +x /usr/local/bin/authk
-
-# enable dind
-RUN echo 'export DOCKER_HOST=tcp://host.docker.internal:2375' >> ~/.bashrc
+COPY authk.sh /usr/bin/authk
+COPY user.sh /usr/bin/user
+RUN chmod +x /usr/bin/authk /usr/bin/user
 
 # install sshd
 RUN apt update && \
-    apt-get install -y openssh-server && \
+    apt-get install -y openssh-server sudo && \
     mkdir /var/run/sshd
 RUN echo "PermitRootLogin prohibit-password" >> /etc/ssh/sshd_config && \
     echo "PasswordAuthentication no" >> /etc/ssh/sshd_config
@@ -48,6 +46,5 @@ EXPOSE 22
 
 # create workspace volume
 VOLUME [ "/workspace" ]
-WORKDIR /workspace
 
 ENTRYPOINT ["/usr/sbin/sshd", "-D"]
